@@ -7,9 +7,7 @@ clc, clear all;
 [K, ~] = size(trainY);
 W = 0.01*randn(K, d);
 b = 0.01*randn(K,1);
-lambda = 0;
-P = EvaluateClassifier(trainX(:,1), W, b);
-J = ComputeCost(trainX, trainY, W, b, lambda);
+
 % [ngrad_b, ngrad_W] = ComputeGradsNumSlow(trainX(:,1), trainY(:,1), W, b, lambda, 1e-6);
 % [grad_W, grad_b] = ComputeGradients(trainX(:, 1), trainY(:, 1), P, W, lambda);
 % 
@@ -17,26 +15,34 @@ J = ComputeCost(trainX, trainY, W, b, lambda);
 % diff_W = CompareGrads(grad_W, ngrad_W)
 % diff_b = CompareGrads(grad_b, ngrad_b)
 
+lambda = 1;
 GDparams.n_batch=100;
 GDparams.eta=0.01;
 GDparams.n_epochs = 40;
 
 [Wstar, bstar, trainLoss, valLoss] = MiniBatchGD(trainX, trainY, valX, valY, GDparams, W, b, lambda);
 figure;
-plot(trainLoss, 'color', 'b'); hold on; 
+plot(trainLoss, 'color', 'b'); hold on; grid on;
 plot(valLoss, 'color', 'r')
-
+title('Cross entropy loss for training and validation sets');
+legend('Training Loss', 'Validation Loss');
+xlabel('Epochs')
+ylabel('Cross entropy loss')
+fname = sprintf('Results/loss_nbatch_%i_eta_%f_n_epochs_%i_lambda_%f.png', GDparams.n_batch, GDparams.eta, GDparams.n_epochs, lambda);
+saveas(gcf, fname, 'png');
+hold off;
 accTest = ComputeAccuracy(testX, testy, Wstar, bstar)
 
-figure;
+
 for i=1:10
 im = reshape(Wstar(i, :), 32, 32, 3);
 s_im{i} = (im - min(im(:))) / (max(im(:)) - min(im(:)));
 s_im{i} = permute(s_im{i}, [2, 1, 3]);
 end
-
+figure;
 montage(s_im)
-
+fnameMontage = sprintf('Results/montage_nbatch_%i_eta_%f_n_epochs_%i_lambda_%f.png', GDparams.n_batch, GDparams.eta, GDparams.n_epochs, lambda);
+saveas(gcf, fnameMontage, 'png');
 
 % Sub-functions
 function [X, Y, y] = LoadBatch(filename)
