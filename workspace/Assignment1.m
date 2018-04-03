@@ -11,6 +11,9 @@ W = 0.01*randn(K, d);
 b = 0.01*randn(K,1);
 lambda = 0;
 
+J1 = ComputeCost(X, Y, W, b, lambda)
+J2 = ComputeCostSVM(X, Y, W, b, lambda)
+
 %%% Gradient evaluation
 % P = EvaluateClassifier(trainX(:,1), W, b);
 % [ngrad_b_slow, ngrad_W_slow] = ComputeGradsNumSlow(trainX(:,1), trainY(:,1), W, b, lambda, 1e-6);
@@ -78,6 +81,14 @@ D = size(X, 2);
 Wij = sum(sum(W.^2,1),2);
 lcross = -log(sum(Y.*P));
 J = (1/D)*sum(lcross)+lambda*Wij;
+end
+
+function J = ComputeCostSVM(X, Y, W, b, lambda)
+P = EvaluateClassifier(X, W, b);
+D = size(X, 2);
+Wij = sum(sum(W.^2,1),2);
+lSVM = max(0, P-Y+1);
+J = (1/D)*sum(lSVM)+lambda*Wij;
 end
 
 function acc = ComputeAccuracy(X, y, W, b)
