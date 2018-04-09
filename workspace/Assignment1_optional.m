@@ -1,80 +1,81 @@
 clc, clear all;
 %%% Load data
-[trainX, trainY, trainy] = LoadBatch('Dataset/data_batch_1.mat');
-[valX, valY, valy] = LoadBatch('Dataset/data_batch_5.mat');
+% [trainX, trainY, trainy] = LoadBatch('Dataset/data_batch_1.mat');
+% [valX, valY, valy] = LoadBatch('Dataset/data_batch_5.mat');
 [testX, testY, testy] = LoadBatch('Dataset/test_batch.mat');
 
 %%% Use all data sets
-% [tx1, tY1, ty1] = LoadBatch('Dataset/data_batch_1.mat');
-% [tx2, tY2, ty2] = LoadBatch('Dataset/data_batch_2.mat');
-% [tx3, tY3, ty3] = LoadBatch('Dataset/data_batch_3.mat');
-% [tx4, tY4, ty4] = LoadBatch('Dataset/data_batch_4.mat');
-% [tx5, tY5, ty5] = LoadBatch('Dataset/data_batch_5.mat');
-% [X_test, Y_test, y_test] = LoadBatch('Dataset/test_batch.mat');
-% 
-% X_train = [tx1, tx2, tx3, tx4, tx5(:, 1:9000)];
-% Y_train = [tY1, tY2, tY3, tY4, tY5(:, 1:9000)];
-% y_train = [ty1, ty2, ty3, ty4, ty5(:, 1:9000)];
-% 
-% X_valid = tx5(:,9001:10000);
-% Y_valid = tY5(:,9001:10000);
-% y_valid = ty5(:,9001:10000);
+[tx1, tY1, ty1] = LoadBatch('Dataset/data_batch_1.mat');
+[tx2, tY2, ty2] = LoadBatch('Dataset/data_batch_2.mat');
+[tx3, tY3, ty3] = LoadBatch('Dataset/data_batch_3.mat');
+[tx4, tY4, ty4] = LoadBatch('Dataset/data_batch_4.mat');
+[tx5, tY5, ty5] = LoadBatch('Dataset/data_batch_5.mat');
+[X_test, Y_test, y_test] = LoadBatch('Dataset/test_batch.mat');
+
+X_train = [tx1, tx2, tx3, tx4, tx5(:, 1:9000)];
+Y_train = [tY1, tY2, tY3, tY4, tY5(:, 1:9000)];
+y_train = [ty1, ty2, ty3, ty4, ty5(:, 1:9000)];
+
+X_valid = tx5(:,9001:10000);
+Y_valid = tY5(:,9001:10000);
+y_valid = ty5(:,9001:10000);
 
 %%% Initialise weights and biases
-[d, N] = size(trainX);
-[K, ~] = size(trainY);
+[d, N] = size(X_train);
+[K, ~] = size(Y_train);
 W = 0.01*randn(K, d);
 b = 0.01*randn(K,1);
 lambda = 0.1;
-GDparams.loss = 'SVM';
+GDparams.loss = 'crossEnt';
 % J1 = ComputeCost(trainX, trainY, W, b, lambda, GDparams)
 
 
 %%% Gradient evaluation
-P = EvaluateClassifier(trainX(:,1), W, b);
-
-[ngrad_b_slow, ngrad_W_slow] = ComputeGradsNumSlow(trainX(:,1), trainY(:,1), W, b, lambda, 1e-6, GDparams);
-[ngrad_b_quick, ngrad_W_quick] = ComputeGradsNum(trainX(:,1), trainY(:, 1), W, b, lambda, 1e-6, GDparams);
-[grad_W, grad_b] = ComputeGradients(trainX(:, 1), trainY(:, 1), P, W, lambda, GDparams);
-
-eps = 1e-6;
-diff_W_slow = CompareGrads(grad_W, ngrad_W_slow)
-diff_b_slow = CompareGrads(grad_b, ngrad_b_slow)
-
-diff_W_quick = CompareGrads(grad_W, ngrad_W_quick)
-diff_b_quick = CompareGrads(grad_b, ngrad_b_quick)
+% P = EvaluateClassifier(trainX(:,1), W, b);
+% 
+% [ngrad_b_slow, ngrad_W_slow] = ComputeGradsNumSlow(trainX(:,1), trainY(:,1), W, b, lambda, 1e-6, GDparams);
+% [ngrad_b_quick, ngrad_W_quick] = ComputeGradsNum(trainX(:,1), trainY(:, 1), W, b, lambda, 1e-6, GDparams);
+% [grad_W, grad_b] = ComputeGradients(trainX(:, 1), trainY(:, 1), P, W, lambda, GDparams);
+% 
+% eps = 1e-6;
+% diff_W_slow = CompareGrads(grad_W, ngrad_W_slow)
+% diff_b_slow = CompareGrads(grad_b, ngrad_b_slow)
+% 
+% diff_W_quick = CompareGrads(grad_W, ngrad_W_quick)
+% diff_b_quick = CompareGrads(grad_b, ngrad_b_quick)
 
 %%% Train and evaluate network on test data
-% lambda = 0.1;
-% GDparams.n_batch=100;
-% GDparams.eta=0.01;
-% GDparams.n_epochs = 100;
-% GDparams.decay = 1;
-% 
-% 
-% [Wstar, bstar, trainLoss, valLoss] = MiniBatchGD(X_train, Y_train, X_valid, Y_valid, GDparams, W, b, lambda);
-% figure;
-% plot(trainLoss, 'color', 'b'); hold on; grid on;
-% plot(valLoss, 'color', 'r')
-% title('Cross entropy loss for training and validation sets');
-% legend('Training Loss', 'Validation Loss');
-% xlabel('Epochs')
-% ylabel('Cross entropy loss')
-% % fname = sprintf('Results/loss_nbatch_%i_eta_%f_n_epochs_%i_lambda_%f.png', GDparams.n_batch, GDparams.eta, GDparams.n_epochs, lambda);
-% % saveas(gcf, fname, 'png');
-% hold off;
-% accTest = ComputeAccuracy(testX, testy, Wstar, bstar)
-% 
-% %%% Visualise weight matrices
-% for i=1:10
-% im = reshape(Wstar(i, :), 32, 32, 3);
-% s_im{i} = (im - min(im(:))) / (max(im(:)) - min(im(:)));
-% s_im{i} = permute(s_im{i}, [2, 1, 3]);
-% end
-% figure;
-% montage(s_im)
-% % fnameMontage = sprintf('Results/all_data_montage_nbatch_%i_eta_%f_n_epochs_%i_lambda_%f.png', GDparams.n_batch, GDparams.eta, GDparams.n_epochs, lambda);
-% % saveas(gcf, fnameMontage, 'png');
+lambda = 0.01;
+GDparams.n_batch=100;
+GDparams.eta=0.02;
+GDparams.n_epochs = 100;
+GDparams.decay = 0.9;
+
+
+[Wstar, bstar, trainLoss, valLoss] = MiniBatchGD(X_train, Y_train, X_valid, Y_valid, GDparams, W, b, lambda);
+figure;
+plot(trainLoss, 'color', 'b'); hold on; grid on;
+plot(valLoss, 'color', 'r')
+title('Cross entropy loss for training and validation sets');
+legend('Training Loss', 'Validation Loss');
+xlabel('Epochs')
+ylabel('Cross entropy loss')
+% fname = sprintf('Results/loss_nbatch_%i_eta_%f_n_epochs_%i_lambda_%f.png', GDparams.n_batch, GDparams.eta, GDparams.n_epochs, lambda);
+% saveas(gcf, fname, 'png');
+hold off;
+
+accTest = ComputeAccuracy(x_test, y_test, Wstar, bstar)
+
+%%% Visualise weight matrices
+for i=1:10
+im = reshape(Wstar(i, :), 32, 32, 3);
+s_im{i} = (im - min(im(:))) / (max(im(:)) - min(im(:)));
+s_im{i} = permute(s_im{i}, [2, 1, 3]);
+end
+figure;
+montage(s_im)
+% fnameMontage = sprintf('Results/all_data_montage_nbatch_%i_eta_%f_n_epochs_%i_lambda_%f.png', GDparams.n_batch, GDparams.eta, GDparams.n_epochs, lambda);
+% saveas(gcf, fnameMontage, 'png');
 
 % Sub-functions
 function [X, Y, y] = LoadBatch(filename)
@@ -164,24 +165,25 @@ for i=1:n_epochs
         
         P = EvaluateClassifier(Xbatch, W, b);
         [grad_W, grad_b] = ComputeGradients(Xbatch, Ybatch, P, W,lambda);
-%         size(grad_W), size(grad_b)
         W = W - eta*grad_W;
         b = b - eta*grad_b;
     end
-    eta = eta * decay;
+    if mod(i,10)==0
+    eta = eta * decay;    
+    end
     trainLoss = ComputeCost(trainX, trainY, W, b, lambda, GDparams);
     valLoss = ComputeCost(valX, valY, W, b, lambda, GDparams)
-%     if valLoss<=valLossOld
-%        Wstar = W;
-%        bstar = b;
-%     end
+    if valLoss<=valLossOld
+       Wstar = W;
+       bstar = b;
+    end
     tL_saved = [tL_saved;trainLoss];
     vL_saved = [vL_saved; valLoss];
     valLossOld=valLoss;
 end
 
-Wstar = W;
-bstar = b;
+% Wstar = W;
+% bstar = b;
 end
 
 %numerical gradients
