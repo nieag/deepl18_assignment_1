@@ -1,4 +1,5 @@
 clc, clear all;
+rng(400);
 %%% Load data
 % [trainX, trainY, trainy] = LoadBatch('Dataset/data_batch_1.mat');
 % [valX, valY, valy] = LoadBatch('Dataset/data_batch_5.mat');
@@ -48,7 +49,7 @@ GDparams.loss = 'crossEnt';
 lambda = 0.01;
 GDparams.n_batch=100;
 GDparams.eta=0.02;
-GDparams.n_epochs = 100;
+GDparams.n_epochs = 200;
 GDparams.decay = 0.9;
 
 
@@ -64,7 +65,7 @@ ylabel('Cross entropy loss')
 % saveas(gcf, fname, 'png');
 hold off;
 
-accTest = ComputeAccuracy(x_test, y_test, Wstar, bstar)
+accTest = ComputeAccuracy(X_test, y_test, Wstar, bstar)
 
 %%% Visualise weight matrices
 for i=1:10
@@ -108,15 +109,6 @@ end
 J = (1/D)*sum(loss)+lambda*Wij;
 end
 
-function J = ComputeCostSVM(X, Y, W, b, lambda)
-P = EvaluateClassifier(X, W, b);
-D = size(X, 2);
-Wij = sum(sum(W.^2,1),2);
-temp = max(0, P - P.*Y + 1);
-lSVM = sum(temp)-1;
-J = (1/D)*sum(lSVM)+lambda*Wij;
-end
-
 function acc = ComputeAccuracy(X, y, W, b)
 P = EvaluateClassifier(X, W, b);
 [~, kStar] = max(P);
@@ -136,9 +128,6 @@ for i=1:N
 end
 grad_b = grad_b/N;
 grad_W = grad_W/N + 2*lambda*W;
-% g = (Y-P)';
-% grad_b = -g'/N;
-% grad_W = -(g'*X'/N + 2*lambda*W);
 end
 
 function RelError = CompareGrads(ga, gn)

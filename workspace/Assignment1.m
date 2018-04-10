@@ -1,4 +1,6 @@
 clc, clear all;
+rng(400);
+
 %%% Load data
 [trainX, trainY, trainy] = LoadBatch('Dataset/data_batch_1.mat');
 [valX, valY, valy] = LoadBatch('Dataset/data_batch_5.mat');
@@ -11,8 +13,8 @@ W = 0.01*randn(K, d);
 b = 0.01*randn(K,1);
 lambda = 0;
 
-J1 = ComputeCost(X, Y, W, b, lambda)
-J2 = ComputeCostSVM(X, Y, W, b, lambda)
+% J1 = ComputeCost(X, Y, W, b, lambda)
+% J2 = ComputeCostSVM(X, Y, W, b, lambda)
 
 %%% Gradient evaluation
 % P = EvaluateClassifier(trainX(:,1), W, b);
@@ -83,14 +85,6 @@ lcross = -log(sum(Y.*P));
 J = (1/D)*sum(lcross)+lambda*Wij;
 end
 
-function J = ComputeCostSVM(X, Y, W, b, lambda)
-P = EvaluateClassifier(X, W, b);
-D = size(X, 2);
-Wij = sum(sum(W.^2,1),2);
-lSVM = max(0, P-Y+1);
-J = (1/D)*sum(lSVM)+lambda*Wij;
-end
-
 function acc = ComputeAccuracy(X, y, W, b)
 P = EvaluateClassifier(X, W, b);
 [~, kStar] = max(P);
@@ -110,9 +104,6 @@ for i=1:N
 end
 grad_b = grad_b/N;
 grad_W = grad_W/N + 2*lambda*W;
-% g = (Y-P)';
-% grad_b = -g'/N;
-% grad_W = -(g'*X'/N + 2*lambda*W);
 end
 
 function RelError = CompareGrads(ga, gn)
@@ -137,7 +128,6 @@ for i=1:n_epochs
         
         P = EvaluateClassifier(Xbatch, W, b);
         [grad_W, grad_b] = ComputeGradients(Xbatch, Ybatch, P, W,lambda);
-%         size(grad_W), size(grad_b)
         W = W - eta*grad_W;
         b = b - eta*grad_b;
         
